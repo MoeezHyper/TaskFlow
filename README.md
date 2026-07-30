@@ -1,6 +1,8 @@
 # TaskFlow - Modern Full-Stack Task Management Application
 
-A production-ready, full-stack Task Management System built with **React**, **TypeScript**, **Tailwind CSS v4**, **Node.js Express REST API**, and **Supabase PostgreSQL**.
+A production-ready, full-stack Task Management System built with **React**, **TypeScript**, **Tailwind CSS v4**, **Node.js Express REST API**, and **Supabase PostgreSQL**, pre-configured for seamless single-click deployment on **Vercel**.
+
+🌐 **Live Production App**: [https://task-management-app-kappa-pied.vercel.app](https://task-management-app-kappa-pied.vercel.app)
 
 ---
 
@@ -9,8 +11,8 @@ A production-ready, full-stack Task Management System built with **React**, **Ty
 - ⚡ **Full-Stack CRUD Architecture**: Create, read, update, and delete tasks dynamically.
 - 🎯 **Advanced Task Attributes**: Prioritization (`low`, `medium`, `high`), custom & dynamic categories, due dates, and completion status.
 - 🔍 **Filtering & Search**: Real-time keyword search with combined status, priority, and category filters.
+- 🚀 **Serverless Ready (Vercel)**: Unified monorepo build running the Vite React frontend and Express REST API as Vercel Serverless Functions.
 - 🔒 **Production Security Hardening**: Integrated Helmet HTTP security headers, strict dynamic CORS validation, API rate limiting, input validation/sanitization, and stack-trace masking in production.
-- 🌐 **Dynamic Base Configuration**: Configurable API endpoints and environment variable bindings for standalone or proxy deployments.
 - 📊 **Health & Connection Diagnostics**: Real-time database health check endpoint and status indicators.
 
 ---
@@ -19,13 +21,15 @@ A production-ready, full-stack Task Management System built with **React**, **Ty
 
 ```text
 Task Management App/
+├── api/                      # Vercel Serverless Function entrypoint
+│   └── index.js              # Exports Express app for Vercel Serverless execution
 ├── backend/                  # Node.js + Express REST API Server
 │   ├── config/               # Supabase database client setup
 │   ├── controllers/          # Endpoint request handlers & input validation
 │   ├── services/             # Core business logic & database queries
 │   ├── routes/               # Route declarations (/api/health, /api/tasks)
 │   ├── middleware/           # Centralized error handler & security rules
-│   ├── index.js              # Express app entry point & security configuration
+│   ├── index.js              # Express app setup & security middleware
 │   ├── .env.example          # Environment variable template for backend
 │   └── package.json
 ├── frontend/                 # React + TypeScript + Tailwind CSS v4 Client
@@ -38,8 +42,10 @@ Task Management App/
 │   ├── vite.config.ts        # Dynamic API proxy configuration
 │   ├── .env.example          # Environment variable template for frontend
 │   └── package.json
-├── package.json              # Root workspace manager & concurrent runner
-└── supabase_setup.sql        # Database migration script for Supabase SQL Editor
+├── .gitignore                # Consolidated workspace gitignore
+├── package.json              # Monorepo workspace manager & root dependencies
+├── supabase_setup.sql        # Database migration script for Supabase SQL Editor
+└── vercel.json               # Vercel deployment, output directory, and routing configuration
 ```
 
 ---
@@ -91,7 +97,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.tasks;
 
 ---
 
-## ⚙️ Setup Instructions
+## ⚙️ Local Setup Instructions
 
 ### Prerequisites
 - **Node.js**: v18.0.0 or higher
@@ -111,29 +117,22 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.tasks;
 ### Step 2: Environment Configuration
 
 #### Backend Environment (`backend/.env`)
-Create a file named `.env` inside the `backend/` directory (or copy from `backend/.env.example`):
+Create a file named `.env` inside `backend/`:
 
 ```env
-# Server Port & Mode
 PORT=5000
 NODE_ENV=development
-
-# Allowed CORS Origins (comma-separated for multiple origins, e.g. http://localhost:5173,https://yourdomain.com)
 CORS_ORIGIN=http://localhost:5173
 
-# Supabase PostgreSQL Credentials
 SUPABASE_URL=https://your-project-id.supabase.co
 SUPABASE_ANON_KEY=your-supabase-anon-key-here
 ```
 
 #### Frontend Environment (`frontend/.env`)
-Create a file named `.env` inside the `frontend/` directory (or copy from `frontend/.env.example`):
+Create a file named `.env` inside `frontend/`:
 
 ```env
-# Client API Base URL (Relative '/api' for same-origin proxy, or absolute URL for separate hosting)
 VITE_API_BASE_URL=/api
-
-# Proxy Target for Vite Development Server
 VITE_API_TARGET=http://localhost:5000
 ```
 
@@ -141,13 +140,11 @@ VITE_API_TARGET=http://localhost:5000
 
 ### Step 3: Install Dependencies
 
-From the project root directory, run:
+From the project root directory:
 
 ```bash
 npm install
 ```
-
-*This will automatically install dependencies for both `backend` and `frontend` workspaces.*
 
 ---
 
@@ -162,29 +159,26 @@ npm run dev
 - 🌐 **Frontend Application**: [http://localhost:5173](http://localhost:5173)
 - 📡 **Backend REST API**: [http://localhost:5000](http://localhost:5000)
 
-#### Individual Execution
-```bash
-# Backend server only
-npm run dev:backend
-
-# Frontend client only
-npm run dev:frontend
-```
-
 ---
 
-### Step 5: Production Build & Deployment
+## 🚀 Deployment (Vercel)
 
-#### 1. Build Frontend Bundle
-```bash
-npm run build
-```
-The optimized production bundle will be generated in `frontend/dist/`.
+This repository is configured to deploy both the **React Frontend** and **Express REST API** together on Vercel using `vercel.json` and Vercel Serverless Functions.
 
-#### 2. Start Backend Server in Production Mode
-Set `NODE_ENV=production` in `backend/.env` and launch:
+### 1. Environment Variables in Vercel
+Go to **Vercel Dashboard → Project Settings → Environment Variables** and add:
+
+| Key | Value | Environment |
+| :--- | :--- | :--- |
+| `SUPABASE_URL` | `https://your-project-id.supabase.co` | Production, Preview |
+| `SUPABASE_ANON_KEY` | `your-supabase-anon-key` | Production, Preview |
+| `CORS_ORIGIN` | `https://task-management-app-kappa-pied.vercel.app` | Production, Preview |
+
+### 2. Deploy Command
+Deploy directly from your terminal using Vercel CLI:
+
 ```bash
-npm --prefix backend start
+vercel --prod
 ```
 
 ---
@@ -206,9 +200,9 @@ npm --prefix backend start
 ## 🔒 Security Features
 
 - **Helmet HTTP Headers**: Enforces secure HTTP headers (`X-Frame-Options`, `X-Content-Type-Options`, `X-XSS-Protection`).
-- **Dynamic CORS Policy**: Restricts origin requests strictly based on configurable `CORS_ORIGIN` environment settings.
-- **Rate Limiting**: Protects `/api/*` endpoints (300 requests per 15-minute window per IP).
-- **Sanitized Error Responses**: Suppresses database stack traces and internal schema logs in production mode.
+- **Dynamic CORS Policy**: Automatically permits Vercel production/preview domains and configures `CORS_ORIGIN`.
+- **Rate Limiting**: Protects `/api` endpoints (300 requests per 15-minute window per IP).
+- **Sanitized Error Responses**: Suppresses database stack traces and internal schema logs in production mode while keeping clean JSON error outputs.
 - **Payload Validation**: Validates string bounds and field enumerations before database processing.
 
 ---
