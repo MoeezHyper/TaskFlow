@@ -1,8 +1,17 @@
+const weatherCache = new Map();
+const WEATHER_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
 export const getWeather = async (req, res, next) => {
   try {
     const city = (req.query.city || 'Islamabad').toString().trim();
     if (!city) {
       return res.status(400).json({ error: 'City query parameter is required' });
+    }
+
+    const cacheKey = city.toLowerCase();
+    const cachedEntry = weatherCache.get(cacheKey);
+    if (cachedEntry && Date.now() - cachedEntry.timestamp < WEATHER_CACHE_TTL) {
+      return res.json({ ...cachedEntry.data, cached: true });
     }
 
     const apiKey = process.env.OPENWEATHER_API_KEY || process.env.VITE_OPENWEATHER_API_KEY;
@@ -43,8 +52,11 @@ export const getWeather = async (req, res, next) => {
       icon: data.weather[0]?.icon || '01d',
     };
 
+    weatherCache.set(cacheKey, { data: weatherData, timestamp: Date.now() });
+
     return res.json(weatherData);
   } catch (error) {
     next(error);
   }
 };
+

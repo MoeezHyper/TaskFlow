@@ -28,9 +28,10 @@ export const apiService = {
     }
   },
 
-  async getTasks(): Promise<{ tasks: Task[]; source: 'supabase' }> {
+  async getTasks(forceRefresh: boolean = false): Promise<{ tasks: Task[]; source: 'supabase'; cached?: boolean }> {
     try {
-      const res = await fetch(`${API_BASE_URL}/tasks`, {
+      const url = `${API_BASE_URL}/tasks${forceRefresh ? '?force=true' : ''}`;
+      const res = await fetch(url, {
         method: 'GET',
         headers: getHeaders(),
       });

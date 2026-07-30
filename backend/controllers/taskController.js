@@ -2,9 +2,27 @@ import { taskService } from '../services/taskService.js';
 
 const ALLOWED_PRIORITIES = ['low', 'medium', 'high'];
 
+let taskServerCache = null;
+let taskServerCacheTime = 0;
+const TASK_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+export const invalidateTaskServerCache = () => {
+  taskServerCache = null;
+  taskServerCacheTime = 0;
+};
+
 export const getTasks = async (req, res, next) => {
   try {
+    const forceRefresh = req.query.force === 'true';
+
+    if (!forceRefresh && taskServerCache && Date.now() - taskServerCacheTime < TASK_CACHE_TTL) {
+      return res.json({ ...taskServerCache, cached: true });
+    }
+
     const result = await taskService.getAllTasks(req);
+    taskServerCache = result;
+    taskServerCacheTime = Date.now();
+
     res.json(result);
   } catch (error) {
     next(error);
@@ -40,6 +58,7 @@ export const createTask = async (req, res, next) => {
     }
 
     const result = await taskService.createTask(req, req.body);
+    invalidateTaskServerCache();
     res.status(201).json(result);
   } catch (error) {
     next(error);
@@ -102,6 +121,7 @@ export const updateTask = async (req, res, next) => {
       return res.status(404).json({ error: 'Task not found' });
     }
 
+    invalidateTaskServerCache();
     res.json(result);
   } catch (error) {
     next(error);
@@ -120,9 +140,11 @@ export const deleteTask = async (req, res, next) => {
       return res.status(404).json({ error: 'Task not found' });
     }
 
+    invalidateTaskServerCache();
     res.json(result);
   } catch (error) {
     next(error);
   }
 };
+
 

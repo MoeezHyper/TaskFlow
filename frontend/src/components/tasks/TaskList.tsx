@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import type { Task, TaskFilter } from '@/types/task';
 import { TaskCard } from './TaskCard';
 import { Search, Filter, Layers, Plus, Sparkles } from 'lucide-react';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface TaskListProps {
   tasks: Task[];
@@ -25,6 +26,8 @@ export const TaskList: React.FC<TaskListProps> = ({
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
+  const debouncedSearch = useDebounce(search, 300);
+
   const categories = useMemo(() => {
     const cats = new Set<string>();
     tasks.forEach((t) => {
@@ -36,8 +39,9 @@ export const TaskList: React.FC<TaskListProps> = ({
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
       const matchSearch =
-        t.title.toLowerCase().includes(search.toLowerCase()) ||
-        (t.description && t.description.toLowerCase().includes(search.toLowerCase()));
+        !debouncedSearch ||
+        t.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        (t.description && t.description.toLowerCase().includes(debouncedSearch.toLowerCase()));
 
       let matchStatus = true;
       if (filter === 'active') matchStatus = !t.completed;
@@ -51,7 +55,7 @@ export const TaskList: React.FC<TaskListProps> = ({
 
       return matchSearch && matchStatus && matchPriority && matchCategory;
     });
-  }, [tasks, search, filter, priorityFilter, categoryFilter]);
+  }, [tasks, debouncedSearch, filter, priorityFilter, categoryFilter]);
 
   return (
     <div className="space-y-6">
