@@ -205,10 +205,6 @@ vercel --prod
 - **Sanitized Error Responses**: Suppresses database stack traces and internal schema logs in production mode while keeping clean JSON error outputs.
 - **Payload Validation**: Validates string bounds and field enumerations before database processing.
 
-## Live Demo
-
-👉 https://task-management-app-kappa-pied.vercel.app/
-
 ---
 
 ## 🛡️ License
