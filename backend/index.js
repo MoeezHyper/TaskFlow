@@ -23,12 +23,19 @@ app.use(
 
 // 2. Dynamic CORS Configuration
 const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim())
+  ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim().replace(/\/$/, ''))
   : [];
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+    const cleanOrigin = origin ? origin.replace(/\/$/, '') : null;
+    if (
+      !cleanOrigin ||
+      allowedOrigins.length === 0 ||
+      allowedOrigins.includes(cleanOrigin) ||
+      allowedOrigins.includes('*') ||
+      cleanOrigin.endsWith('.vercel.app')
+    ) {
       callback(null, true);
     } else {
       callback(new Error(`Access denied by CORS policy for origin: ${origin}`));
@@ -50,7 +57,7 @@ const limiter = rateLimit({
   message: { error: 'Too many requests from this IP, please try again after 15 minutes.' },
 });
 
-app.use('/api/', limiter);
+app.use('/api', limiter);
 
 // Body Parsing
 app.use(express.json({ limit: '1mb' }));
@@ -60,19 +67,23 @@ app.use('/api/health', healthRoutes);
 app.use('/api/tasks', taskRoutes);
 
 // Catch-all for undefined 404 API routes
-app.use('/api/*', (req, res) => {
+app.use((req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
 });
 
 // Error Handling Middleware
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`🚀 Task Management Express Server running in [${NODE_ENV}] mode on port ${PORT}`);
-  if (allowedOrigins.length > 0) {
-    console.log(`Restricted CORS origins: ${allowedOrigins.join(', ')}`);
-  } else {
-    console.log(`CORS allowed for all origins (Set CORS_ORIGIN in environment for production)`);
-  }
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Task Management Express Server running in [${NODE_ENV}] mode on port ${PORT}`);
+    if (allowedOrigins.length > 0) {
+      console.log(`Restricted CORS origins: ${allowedOrigins.join(', ')}`);
+    } else {
+      console.log(`CORS allowed for all origins (Set CORS_ORIGIN in environment for production)`);
+    }
+  });
+}
+
+export default app;
 
