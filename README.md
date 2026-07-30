@@ -211,6 +211,10 @@ npm --prefix backend start
 - **Sanitized Error Responses**: Suppresses database stack traces and internal schema logs in production mode.
 - **Payload Validation**: Validates string bounds and field enumerations before database processing.
 
+## Live Demo
+
+👉 https://task-management-app-kappa-pied.vercel.app/
+
 ---
 
 ## 🛡️ License
