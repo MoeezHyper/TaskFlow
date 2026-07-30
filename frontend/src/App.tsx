@@ -6,6 +6,7 @@ import { useTasks } from '@/hooks/useTasks';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Toast } from '@/components/common/Toast';
+import { WeatherWidget } from '@/components/common/WeatherWidget';
 import { StatsBanner } from '@/components/tasks/StatsBanner';
 import { TaskList } from '@/components/tasks/TaskList';
 import { TaskModal } from '@/components/tasks/TaskModal';
@@ -52,6 +53,7 @@ export const App: React.FC = () => {
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-8">
+        <WeatherWidget />
         <StatsBanner tasks={tasks} />
         <TaskList
           tasks={tasks}

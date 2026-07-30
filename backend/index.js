@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import taskRoutes from './routes/taskRoutes.js';
 import healthRoutes from './routes/healthRoutes.js';
+import weatherRoutes from './routes/weatherRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
@@ -65,6 +66,7 @@ app.use(express.json({ limit: '1mb' }));
 // API Routes
 app.use('/api/health', healthRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/weather', weatherRoutes);
 
 // Catch-all for undefined 404 API routes
 app.use((req, res) => {
